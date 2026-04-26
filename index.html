@@ -20,10 +20,10 @@
             margin: 0;
             padding: 40px 20px;
             color: var(--text);
-            padding-bottom: 120px;
+            padding-bottom: 150px; /* Room for the Intelligence HUD */
         }
 
-        .container { max-width: 1100px; margin: 0 auto; }
+        .container { max-width: 1200px; margin: 0 auto; }
 
         header {
             background: var(--mlea-navy);
@@ -55,6 +55,8 @@
             outline: none;
         }
 
+        #db-query::placeholder { color: rgba(255,255,255,0.4); }
+
         .rank-section { 
             background: var(--card-bg); 
             margin-top: 30px; 
@@ -84,49 +86,64 @@
             margin-right: 12px; 
         }
 
-        /* ALIGNMENT FIXES HERE */
+        /* --- GRID ALIGNMENT ENGINE --- */
         table { 
             width: 100%; 
             border-collapse: collapse; 
-            table-layout: fixed; /* Forces columns to stay the same width */
+            table-layout: fixed; /* Lock columns in place */
         }
 
         th, td { 
-            text-align: left; /* Strict left alignment */
+            text-align: left !important; 
             padding: 12px 25px; 
             overflow: hidden;
-            text-overflow: ellipsis; /* Prevents text from breaking layout */
+            text-overflow: ellipsis;
             white-space: nowrap;
         }
 
         th { 
-            font-size: 0.7rem; 
+            font-size: 0.75rem; 
             color: #888; 
             text-transform: uppercase; 
             background: #fff; 
-            border-bottom: 1px solid #eee; 
+            border-bottom: 2px solid #eee; 
             letter-spacing: 1px;
         }
 
-        td { 
-            border-top: 1px solid #f1f1f1; 
-            font-size: 0.9rem; 
-        }
-
-        .badge-id { font-weight: bold; color: var(--mlea-navy); }
-        
-        #stats-hud { position: fixed; bottom: 25px; right: 25px; background: var(--mlea-navy); color: white; padding: 20px; border-radius: 8px; border-right: 6px solid var(--mlea-gold); box-shadow: 0 10px 25px rgba(0,0,0,0.2); min-width: 220px; z-index: 1000; }
-        .stat-line { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 3px; }
-        .stat-count { color: var(--mlea-gold); font-weight: bold; }
-        .status-dot { height: 8px; width: 8px; border-radius: 50%; display: inline-block; margin-right: 8px; }
-
-        /* Column Width Definitions */
-        .col-id { width: 10%; }
-        .col-rank { width: 25%; }
-        .col-name { width: 35%; }
-        .col-date { width: 15%; }
+        /* Fixed Column Widths for Perfect Alignment */
+        .col-id     { width: 90px; }
+        .col-rank   { width: 22%; }
+        .col-name   { width: 33%; }
+        .col-date   { width: 18%; }
         .col-status { width: 15%; }
 
+        td { border-top: 1px solid #f1f1f1; font-size: 0.9rem; }
+        .badge-id { font-weight: bold; color: var(--mlea-navy); font-family: 'Courier New', Courier, monospace; }
+
+        /* --- HUD STYLES --- */
+        #stats-hud { 
+            position: fixed; bottom: 25px; right: 25px; 
+            background: var(--mlea-navy); color: white; 
+            padding: 20px; border-radius: 8px; 
+            border-right: 6px solid var(--mlea-gold); 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3); 
+            min-width: 260px; z-index: 1000; 
+        }
+
+        .stat-header {
+            font-weight: bold; font-size: 0.65rem; color: var(--mlea-gold); 
+            margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;
+            border-bottom: 1px solid rgba(176, 141, 87, 0.3);
+            padding-bottom: 5px;
+        }
+
+        .stat-line { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.8rem; }
+        .stat-count { color: var(--mlea-gold); font-weight: bold; }
+
+        .strength-bar-bg { width: 100%; height: 6px; background: rgba(255,255,255,0.1); margin: 10px 0; border-radius: 3px; }
+        #strength-fill { height: 100%; background: var(--mlea-gold); width: 0%; transition: width 1.5s ease; border-radius: 3px; }
+
+        .status-dot { height: 8px; width: 8px; border-radius: 50%; display: inline-block; margin-right: 8px; }
     </style>
 </head>
 <body>
@@ -135,11 +152,12 @@
     <header>
         <div>
             <h1 style="margin-bottom:5px;">Municipal Law Enforcement</h1>
-            <div style="font-size: 0.7rem; opacity: 0.7; text-transform: uppercase; letter-spacing: 1px;">Personnel Management System</div>
+            <div style="font-size: 0.7rem; opacity: 0.7; text-transform: uppercase; letter-spacing: 1px;">Official Personnel Management System</div>
         </div>
         
         <div class="search-container">
-            <input type="text" id="db-query" placeholder="Search Database..." onkeyup="filterDatabase()">
+            <span style="position:absolute; left:15px; top:12px; opacity:0.5;">🔍</span>
+            <input type="text" id="db-query" placeholder="DATABASE QUERY..." onkeyup="filterDatabase()">
         </div>
     </header>
 
@@ -171,11 +189,19 @@
 </div>
 
 <div id="stats-hud">
-    <div style="font-weight: bold; font-size: 0.7rem; color: var(--mlea-gold); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">Rank Distribution</div>
+    <div class="stat-header">Agency Intelligence</div>
+    <div class="stat-line">
+        <span>Active Strength</span>
+        <span id="active-ratio" class="stat-count">0/0</span>
+    </div>
+    <div class="strength-bar-bg"><div id="strength-fill"></div></div>
+    
+    <div class="stat-header" style="margin-top:15px;">Rank Distribution</div>
     <div id="rank-counts"></div>
 </div>
 
 <script>
+// Prevent caching to ensure live data
 const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSAbS7bw1SORtP8GVyQ95rb7h_JcRJ0sQR6xPB5-aX9vXxgxTUlXCv1oenjnvoBp72Exm69dcoqKaq9/pub?output=csv&cache=' + Math.random();
 
 async function loadData() {
@@ -191,9 +217,14 @@ async function loadData() {
         };
         
         let rankTally = {};
+        let totalActive = 0;
+        let totalPersonnel = 0;
 
         rows.forEach((row, i) => {
+            // Skip headers
             if (i < 2) return; 
+
+            // Split by comma ignoring commas inside quotes
             const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
             
             const name   = cols[2]?.replace(/"/g, "").trim();
@@ -202,15 +233,17 @@ async function loadData() {
             const date   = cols[7]?.replace(/"/g, "").trim();
             const status = cols[8]?.replace(/"/g, "").trim();
 
+            // Filter out junk rows and formatting dividers
             const isGarbage = row.toUpperCase().includes("TRF") || row.toUpperCase().includes("HSB") || row.toUpperCase().includes("AIR");
 
             if (name && name.length > 2 && !isGarbage) {
+                totalPersonnel++;
                 if (rank) { rankTally[rank] = (rankTally[rank] || 0) + 1; }
 
                 const isActive = status?.toLowerCase().includes('active');
+                if (isActive) totalActive++;
+
                 const tr = document.createElement('tr');
-                
-                // Applying the specific column classes to the cells for alignment
                 tr.innerHTML = `
                     <td class="col-id badge-id">${id}</td>
                     <td class="col-rank">${rank}</td>
@@ -222,6 +255,7 @@ async function loadData() {
                     </td>
                 `;
 
+                // Sorting Logic
                 const r = rank.toLowerCase();
                 if (r.includes('chief') || r.includes('comm') || r.includes('capt') || r.includes('lieut')) {
                     groups.exec.appendChild(tr);
@@ -233,6 +267,12 @@ async function loadData() {
             }
         });
 
+        // Update Agency HUD
+        document.getElementById('active-ratio').innerText = `${totalActive} / ${totalPersonnel}`;
+        const percent = totalPersonnel > 0 ? (totalActive / totalPersonnel) * 100 : 0;
+        document.getElementById('strength-fill').style.width = percent + "%";
+
+        // Update Rank HUD
         const hud = document.getElementById('rank-counts');
         Object.keys(rankTally).sort((a,b) => rankTally[b] - rankTally[a]).forEach(rankName => {
             const div = document.createElement('div');
@@ -241,9 +281,12 @@ async function loadData() {
             hud.appendChild(div);
         });
 
-    } catch (e) { console.error(e); }
+    } catch (e) { 
+        console.error("Database Error:", e); 
+    }
 }
 
+// SEARCH ENGINE
 function filterDatabase() {
     const input = document.getElementById('db-query');
     const filter = input.value.toUpperCase();
@@ -255,6 +298,7 @@ function filterDatabase() {
     });
 }
 
+// RUN ON LOAD
 loadData();
 </script>
 </body>
