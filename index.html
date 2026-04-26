@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MLEA Master Roster | Full Personnel View</title>
+    <style>
+        :root {
+            --mlea-navy: #0a192f;
+            --mlea-gold: #b08d57;
+            --mlea-border: #ccd6f6;
+            --row-hover: #f1f4f9;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #eef2f7;
+            margin: 0;
+            padding: 20px;
+            color: #2d3436;
+        }
+
+        .roster-wrapper {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .header-panel {
+            background-color: var(--mlea-navy);
+            color: white;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid var(--mlea-gold);
+            border-radius: 8px 8px 0 0;
+        }
+
+        .header-panel h1 {
+            margin: 0;
+            font-size: 1.3rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .district-container {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .district-column {
+            flex: 1;
+            background: white;
+            border: 1px solid #d1d8e0;
+            border-radius: 4px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background-color: #f1f4f9;
+            color: #636e72;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            padding: 12px;
+            text-align: left;
+            border-bottom: 2px solid #edeff2;
+        }
+
+        td {
+            padding: 10px 12px;
+            font-size: 0.85rem;
+            border-bottom: 1px solid #f0f2f5;
+        }
+
+        .category-header {
+            background-color: var(--mlea-navy);
+            color: white;
+            padding: 10px 15px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        .col-id {
+            font-weight: 700;
+            color: var(--mlea-navy);
+            width: 60px;
+        }
+
+        .tag {
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.6rem;
+            font-weight: bold;
+            color: white;
+            text-transform: uppercase;
+        }
+
+        /* Color coding tags based on content */
+        .status-active { background: #0984e3; }
+        .status-other { background: #636e72; }
+
+        .date-col {
+            color: #7f8c8d;
+            font-size: 0.75rem;
+        }
+
+        tr:hover { background-color: var(--row-hover); }
+    </style>
+</head>
+<body>
+
+<div class="roster-wrapper">
+    <div class="header-panel">
+        <div>
+            <h1>Municipal Law Enforcement Agency</h1>
+            <span style="font-size: 0.75rem; color: var(--mlea-gold);">Full Personnel Record // ALL STATUSES</span>
+        </div>
+        <div id="status-indicator" style="text-align: right; opacity: 0.8; font-size: 0.75rem;">
+            SYSTEM STATUS: CONNECTING...
+        </div>
+    </div>
+
+    <div class="district-container">
+        <div class="district-column">
+            <div class="category-header">District 01: Central</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Rank & Name</th>
+                        <th>Joined</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="dist-1-body"></tbody>
+            </table>
+        </div>
+
+        <div class="district-column">
+            <div class="category-header">District 02: Industrial</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Rank & Name</th>
+                        <th>Joined</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="dist-2-body"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSAbS7bw1SORtP8GVyQ95rb7h_JcRJ0sQR6xPB5-aX9vXxgxTUlXCv1oenjnvoBp72Exm69dcoqKaq9/pub?output=csv';
+
+async function updateRoster() {
+    try {
+        const response = await fetch(csvUrl);
+        const text = await response.text();
+        const rows = text.replace(/\r/g, "").split('\n'); 
+
+        const d1Body = document.getElementById('dist-1-body');
+        const d2Body = document.getElementById('dist-2-body');
+        
+        d1Body.innerHTML = '';
+        d2Body.innerHTML = '';
+
+        let count = 0;
+
+        rows.forEach((row, index) => {
+            // Skip headers (Row 0 and 1)
+            if (index < 2 || !row.trim()) return;
+
+            const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); 
+
+            // Mapping columns
+            const badge  = cols[4] ? cols[4].trim() : "";
+            const name   = cols[7] ? cols[7].replace(/"/g, "").trim() : "";
+            const status = cols[8] ? cols[8].trim() : "N/A";
+            const joined = cols[9] ? cols[9].trim() : "N/A";
+
+            // DISPLAY RULE: Only requires a name and a badge
+            if (name && badge) {
+                count++;
+                
+                // If badge starts with 1 or 2 -> Dist 1, else Dist 2
+                let district = (badge.startsWith('1') || badge.startsWith('2')) ? '1' : '2';
+                const targetBody = document.getElementById(`dist-${district}-body`);
+                
+                if (targetBody) {
+                    const tr = document.createElement('tr');
+                    
+                    // Simple logic to change tag color if not Active
+                    const statusClass = status.toLowerCase().includes("active") ? "status-active" : "status-other";
+
+                    tr.innerHTML = `
+                        <td class="col-id">${badge}</td>
+                        <td><span style="font-weight:600">Officer</span> ${name}</td>
+                        <td class="date-col">${joined}</td>
+                        <td><span class="tag ${statusClass}">${status}</span></td>
+                    `;
+                    targetBody.appendChild(tr);
+                }
+            }
+        });
+        
+        document.getElementById('status-indicator').innerHTML = `SYSTEM STATUS: ONLINE<br>${count} PERSONNEL LOADED`;
+    } catch (err) {
+        console.error("Roster error:", err);
+        document.getElementById('status-indicator').innerHTML = "SYSTEM STATUS: CONNECTION ERROR";
+    }
+}
+
+updateRoster();
+</script>
+
+</body>
+</html>
