@@ -20,13 +20,10 @@
             margin: 0;
             padding: 40px 20px;
             color: var(--text);
-            padding-bottom: 120px; /* Space for the HUD */
+            padding-bottom: 120px;
         }
 
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-        }
+        .container { max-width: 1100px; margin: 0 auto; }
 
         header {
             background: var(--mlea-navy);
@@ -37,43 +34,38 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
         }
 
-        header h1 {
-            margin: 0;
-            font-size: 1.5rem;
-            letter-spacing: 2px;
-            text-transform: uppercase;
+        /* Search Bar Styling */
+        .search-container {
+            position: relative;
+            flex-grow: 1;
+            max-width: 400px;
         }
 
-        .rank-section {
-            background: var(--card-bg);
-            margin-top: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            overflow: hidden;
+        #db-query {
+            width: 100%;
+            padding: 12px 15px 12px 40px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid var(--mlea-gold);
+            border-radius: 4px;
+            color: white;
+            font-family: inherit;
+            outline: none;
+            transition: all 0.3s;
         }
 
-        .section-title {
-            background: #f8f9fa;
-            padding: 15px 25px;
-            font-weight: bold;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            border-bottom: 1px solid #eee;
-            color: var(--mlea-navy);
-            display: flex;
-            align-items: center;
-        }
+        #db-query:focus { background: rgba(255,255,255,0.2); box-shadow: 0 0 10px rgba(176, 141, 87, 0.3); }
 
-        .section-title::before {
-            content: "";
-            display: inline-block;
-            width: 8px;
-            height: 15px;
-            background: var(--mlea-gold);
-            margin-right: 12px;
-        }
+        #db-query::placeholder { color: rgba(255,255,255,0.5); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
+
+        .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); opacity: 0.5; }
+
+        .rank-section { background: var(--card-bg); margin-top: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); overflow: hidden; }
+        .section-title { background: #f8f9fa; padding: 15px 25px; font-weight: bold; text-transform: uppercase; font-size: 0.85rem; border-bottom: 1px solid #eee; color: var(--mlea-navy); display: flex; align-items: center; }
+        .section-title::before { content: ""; display: inline-block; width: 8px; height: 15px; background: var(--mlea-gold); margin-right: 12px; }
 
         table { width: 100%; border-collapse: collapse; }
         th { text-align: left; font-size: 0.7rem; color: #888; text-transform: uppercase; padding: 15px 25px; background: #fff; border-bottom: 1px solid #eee; }
@@ -81,40 +73,10 @@
 
         .badge-id { font-weight: bold; color: var(--mlea-navy); }
         
-        /* Stats HUD Styles */
-        #stats-hud {
-            position: fixed;
-            bottom: 25px;
-            right: 25px;
-            background: var(--mlea-navy);
-            color: white;
-            padding: 20px;
-            border-radius: 8px;
-            border-right: 6px solid var(--mlea-gold);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            min-width: 220px;
-            z-index: 1000;
-        }
-
-        .stat-line {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
-            font-size: 0.8rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            padding-bottom: 3px;
-        }
-
+        #stats-hud { position: fixed; bottom: 25px; right: 25px; background: var(--mlea-navy); color: white; padding: 20px; border-radius: 8px; border-right: 6px solid var(--mlea-gold); box-shadow: 0 10px 25px rgba(0,0,0,0.2); min-width: 220px; z-index: 1000; }
+        .stat-line { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 3px; }
         .stat-count { color: var(--mlea-gold); font-weight: bold; }
-
-        .status-dot {
-            height: 8px;
-            width: 8px;
-            background-color: var(--status-green);
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 8px;
-        }
+        .status-dot { height: 8px; width: 8px; border-radius: 50%; display: inline-block; margin-right: 8px; }
     </style>
 </head>
 <body>
@@ -122,8 +84,13 @@
 <div class="container">
     <header>
         <div>
-            <h1>Municipal Law Enforcement</h1>
-            <div style="font-size: 0.8rem; opacity: 0.7;">Official Personnel Management System</div>
+            <h1 style="margin-bottom:5px;">Municipal Law Enforcement</h1>
+            <div style="font-size: 0.7rem; opacity: 0.7; text-transform: uppercase; letter-spacing: 1px;">Terminal Access // Records Dept.</div>
+        </div>
+        
+        <div class="search-container">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="db-query" placeholder="Query Name, ID, or Rank..." onkeyup="filterDatabase()">
         </div>
     </header>
 
@@ -207,7 +174,7 @@ async function loadData() {
                 const r = rank.toLowerCase();
                 if (r.includes('chief') || r.includes('comm') || r.includes('capt') || r.includes('lieut')) {
                     groups.exec.appendChild(tr);
-                } else if (r.includes('sgt') || r.includes('corp') || r.includes('sergeant')) {
+                } else if (r.includes('sgt') || r.includes('corp') || r.includes('sergeant') || r.includes('cpl')) {
                     groups.super.appendChild(tr);
                 } else {
                     groups.patrol.appendChild(tr);
@@ -215,7 +182,6 @@ async function loadData() {
             }
         });
 
-        // Update HUD
         const hud = document.getElementById('rank-counts');
         Object.keys(rankTally).sort((a,b) => rankTally[b] - rankTally[a]).forEach(rankName => {
             const div = document.createElement('div');
@@ -226,6 +192,26 @@ async function loadData() {
 
     } catch (e) { console.error(e); }
 }
+
+// THE QUERY ENGINE
+function filterDatabase() {
+    const input = document.getElementById('db-query');
+    const filter = input.value.toUpperCase();
+    const rows = document.querySelectorAll('tr');
+
+    rows.forEach(row => {
+        // Skip header rows
+        if (row.parentElement.tagName === 'THEAD') return;
+        
+        const text = row.textContent || row.innerText;
+        if (text.toUpperCase().indexOf(filter) > -1) {
+            row.style.display = "";
+        } else {
+            row.style.display = "none";
+        }
+    });
+}
+
 loadData();
 </script>
 </body>
