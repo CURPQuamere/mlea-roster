@@ -5,7 +5,7 @@ async function loadData() {
     try {
         const response = await fetch(csvUrl);
         const data = await response.text();
-        const rows = data.split('\n').filter(row => row.trim() !== ''); 
+        const rows = data.split('\n'); 
 
         let total = 0;
         const containers = {
@@ -14,28 +14,25 @@ async function loadData() {
             patrol: document.getElementById('group-patrol')
         };
 
-        // Reset the tables
+        // Clear tables
         Object.values(containers).forEach(c => { if(c) c.innerHTML = ''; });
 
-        rows.forEach((row, index) => {
-            // Skip the first 2 header rows
-            if (index < 2) return;
-
-            // Handle commas inside quotes correctly
+        rows.forEach((row) => {
+            // Use regex to split by comma but respect quotes
             const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
             
-            // EXACT MAPPING BASED ON YOUR DATA:
-            const name      = cols[2] ? cols[2].replace(/"/g, "").trim() : "";  // Col C
-            const id        = cols[3] ? cols[3].replace(/"/g, "").trim() : "";  // Col D
-            const rank      = cols[4] ? cols[4].replace(/"/g, "").trim() : "";  // Col E
-            const joined    = cols[7] ? cols[7].replace(/"/g, "").trim() : "--"; // Col H
-            const status    = cols[8] ? cols[8].replace(/"/g, "").trim() : "Active"; // Col I (Assumed)
+            // MAP BASED ON YOUR DATA (C, D, E, H)
+            // We use .at() or index numbers: C=2, D=3, E=4, H=7
+            const name      = cols[2] ? cols[2].replace(/"/g, "").trim() : "";  
+            const id        = cols[3] ? cols[3].replace(/"/g, "").trim() : "";  
+            const rank      = cols[4] ? cols[4].replace(/"/g, "").trim() : "";  
+            const joined    = cols[7] ? cols[7].replace(/"/g, "").trim() : "--"; 
+            const status    = cols[8] ? cols[8].replace(/"/g, "").trim() : "Active"; 
 
-            if (name && name !== "") {
+            // VALIDATION: Skip if name is empty, or if name IS the word "Name" (header)
+            if (name && name.toLowerCase() !== "name" && name.length > 1) {
                 total++;
                 const tr = document.createElement('tr');
-                
-                // Color coding for status
                 const sLower = status.toLowerCase();
                 const sClass = sLower.includes('active') ? 'status-active' : 'status-other';
                 
@@ -47,7 +44,6 @@ async function loadData() {
                     <td style="width: 20%;"><span class="tag ${sClass}">${status}</span></td>
                 `;
 
-                // Sorting into the correct visual sections
                 const r = rank.toLowerCase();
                 if (r.includes('comm') || r.includes('chief') || r.includes('capt') || r.includes('lieut')) {
                     containers.exec.appendChild(tr);
@@ -62,7 +58,7 @@ async function loadData() {
         document.getElementById('counter').innerText = total + " PERSONNEL";
         
     } catch (e) {
-        console.error("Data Load Error:", e);
+        console.error("Error:", e);
     }
 }
 
