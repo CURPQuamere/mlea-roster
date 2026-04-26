@@ -1,11 +1,12 @@
 <script>
-const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSAbS7bw1SORtP8GVyQ95rb7h_JcRJ0sQR6xPB5-aX9vXxgxTUlXCv1oenjnvoBp72Exm69dcoqKaq9/pub?output=csv';
+// We add a random number to the end of the URL (?v=...) to force Google to send fresh data
+const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSAbS7bw1SORtP8GVyQ95rb7h_JcRJ0sQR6xPB5-aX9vXxgxTUlXCv1oenjnvoBp72Exm69dcoqKaq9/pub?output=csv&cachebust=' + Math.random();
 
 async function loadData() {
     try {
         const response = await fetch(csvUrl);
         const data = await response.text();
-        const rows = data.split('\n'); 
+        const rows = data.split('\n').filter(row => row.trim() !== ''); 
 
         let total = 0;
         const containers = {
@@ -14,27 +15,27 @@ async function loadData() {
             patrol: document.getElementById('group-patrol')
         };
 
-        // Clear tables
         Object.values(containers).forEach(c => { if(c) c.innerHTML = ''; });
 
         rows.forEach((row) => {
-            // Use regex to split by comma but respect quotes
             const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
             
-            // MAP BASED ON YOUR DATA (C, D, E, H)
-            // We use .at() or index numbers: C=2, D=3, E=4, H=7
+            // EXACT MAPPING: C=2, D=3, E=4, H=7
             const name      = cols[2] ? cols[2].replace(/"/g, "").trim() : "";  
             const id        = cols[3] ? cols[3].replace(/"/g, "").trim() : "";  
             const rank      = cols[4] ? cols[4].replace(/"/g, "").trim() : "";  
             const joined    = cols[7] ? cols[7].replace(/"/g, "").trim() : "--"; 
             const status    = cols[8] ? cols[8].replace(/"/g, "").trim() : "Active"; 
 
-            // VALIDATION: Skip if name is empty, or if name IS the word "Name" (header)
-            if (name && name.toLowerCase() !== "name" && name.length > 1) {
+            // FILTER: Skip if row contains AIR, MU, or HASB, or if name is a header
+            const rawRow = row.toUpperCase();
+            const isGarbage = rawRow.includes("AIR") || rawRow.includes("HASB") || rawRow.includes("MU");
+            const isHeader = name.toLowerCase() === "name" || name.toLowerCase() === "personnel";
+
+            if (name && !isGarbage && !isHeader && name.length > 1) {
                 total++;
                 const tr = document.createElement('tr');
-                const sLower = status.toLowerCase();
-                const sClass = sLower.includes('active') ? 'status-active' : 'status-other';
+                const sClass = status.toLowerCase().includes('active') ? 'status-active' : 'status-other';
                 
                 tr.innerHTML = `
                     <td class="badge-id" style="width: 10%;">${id}</td>
