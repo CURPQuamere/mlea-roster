@@ -1,62 +1,225 @@
-<div class="roster-wrapper">
-    <div class="header-panel">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MLEA | Personnel Management</title>
+    <style>
+        :root {
+            --mlea-navy: #0a192f;
+            --mlea-gold: #b08d57;
+            --bg: #f4f7f6;
+            --card-bg: #ffffff;
+            --text: #2d3436;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 40px 20px;
+            color: var(--text);
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: var(--mlea-navy);
+            color: white;
+            padding: 30px;
+            border-radius: 8px 8px 0 0;
+            border-bottom: 5px solid var(--mlea-gold);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .rank-section {
+            background: var(--card-bg);
+            margin-top: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .section-title {
+            background: #f8f9fa;
+            padding: 15px 25px;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            border-bottom: 1px solid #eee;
+            color: var(--mlea-navy);
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title::before {
+            content: "";
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: var(--mlea-gold);
+            margin-right: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            font-size: 0.75rem;
+            color: #888;
+            text-transform: uppercase;
+            padding: 15px 25px;
+            background: #fff;
+        }
+
+        td {
+            padding: 12px 25px;
+            border-top: 1px solid #f1f1f1;
+            font-size: 0.9rem;
+        }
+
+        .badge-id {
+            font-weight: bold;
+            color: var(--mlea-navy);
+        }
+
+        .tag {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            background: #eee;
+        }
+
+        .status-active { background: #d1e7dd; color: #0f5132; }
+        .status-other { background: #fff3cd; color: #856404; }
+
+        .loading-shimmer {
+            text-align: center;
+            padding: 50px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
         <div>
             <h1>Municipal Law Enforcement Agency</h1>
-            <span style="font-size: 0.75rem; color: var(--mlea-gold);">Personnel Record // Rank Structure View</span>
+            <div style="font-size: 0.8rem; opacity: 0.8; margin-top: 5px;">Master Personnel Record // Official Use Only</div>
         </div>
-        <div id="status-indicator" style="text-align: right; opacity: 0.8; font-size: 0.75rem;">
-            SYSTEM STATUS: CONNECTING...
+        <div id="counter" style="font-size: 1.2rem; font-weight: bold; color: var(--mlea-gold);">--</div>
+    </header>
+
+    <div id="roster-content">
+        <div class="rank-section">
+            <div class="section-title">Department Executive</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 10%;">ID</th>
+                        <th style="width: 20%;">Rank</th>
+                        <th style="width: 30%;">Name</th>
+                        <th style="width: 20%;">Joined</th>
+                        <th style="width: 20%;">Status</th>
+                    </tr>
+                </thead>
+                <tbody id="group-exec"></tbody>
+            </table>
         </div>
-    </div>
 
-    <div class="executive-section" style="margin-top:20px; background:white; border:1px solid #d1d8e0;">
-        <div class="category-header" style="background:#1a2a3a;">Department Executive</div>
-        <table>
-            <thead>
-                <tr>
-                    <th style="width:80px;">Identifier</th>
-                    <th style="width:120px;">Rank</th>
-                    <th>Name</th>
-                    <th>Join Date</th>
-                    <th>Last Promotion</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody id="rank-exec"></tbody>
-        </table>
-    </div>
+        <div class="rank-section">
+            <div class="section-title">Field Supervisors</div>
+            <table>
+                <tbody id="group-super"></tbody>
+            </table>
+        </div>
 
-    <div class="executive-section" style="margin-top:20px; background:white; border:1px solid #d1d8e0;">
-        <div class="category-header">Field Supervisors</div>
-        <table>
-            <thead>
-                <tr>
-                    <th style="width:80px;">Identifier</th>
-                    <th style="width:120px;">Rank</th>
-                    <th>Name</th>
-                    <th>Join Date</th>
-                    <th>Last Promotion</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody id="rank-super"></tbody>
-        </table>
-    </div>
-
-    <div class="executive-section" style="margin-top:20px; background:white; border:1px solid #d1d8e0;">
-        <div class="category-header">Patrol Officers</div>
-        <table>
-            <thead>
-                <tr>
-                    <th style="width:80px;">Identifier</th>
-                    <th style="width:120px;">Rank</th>
-                    <th>Name</th>
-                    <th>Join Date</th>
-                    <th>Last Promotion</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody id="rank-patrol"></tbody>
-        </table>
+        <div class="rank-section">
+            <div class="section-title">Patrol Personnel</div>
+            <table>
+                <tbody id="group-patrol"></tbody>
+            </table>
+        </div>
     </div>
 </div>
+
+<script>
+const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSAbS7bw1SORtP8GVyQ95rb7h_JcRJ0sQR6xPB5-aX9vXxgxTUlXCv1oenjnvoBp72Exm69dcoqKaq9/pub?output=csv';
+
+async function loadData() {
+    try {
+        const response = await fetch(csvUrl);
+        const data = await response.text();
+        const rows = data.split('\n').slice(2); // Skip header rows
+
+        let total = 0;
+        const containers = {
+            exec: document.getElementById('group-exec'),
+            super: document.getElementById('group-super'),
+            patrol: document.getElementById('group-patrol')
+        };
+
+        rows.forEach(row => {
+            const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+            if (cols.length < 8) return;
+
+            // MAPPING: Adjust these numbers if columns shift
+            const id = cols[4]?.replace(/"/g, "").trim();
+            const rank = cols[6]?.replace(/"/g, "").trim() || "Officer";
+            const name = cols[7]?.replace(/"/g, "").trim();
+            const status = cols[8]?.replace(/"/g, "").trim() || "Active";
+            const joined = cols[9]?.replace(/"/g, "").trim() || "--";
+
+            if (name && id) {
+                total++;
+                const tr = document.createElement('tr');
+                const sClass = status.toLowerCase().includes('active') ? 'status-active' : 'status-other';
+                
+                tr.innerHTML = `
+                    <td class="badge-id" style="width: 10%;">${id}</td>
+                    <td style="width: 20%;">${rank}</td>
+                    <td style="width: 30%; font-weight: 500;">${name}</td>
+                    <td style="width: 20%; color: #666;">${joined}</td>
+                    <td style="width: 20%;"><span class="tag ${sClass}">${status}</span></td>
+                `;
+
+                // Sorting Logic
+                const r = rank.toLowerCase();
+                if (r.includes('comm') || r.includes('chief') || r.includes('capt') || r.includes('lieut')) {
+                    containers.exec.appendChild(tr);
+                } else if (r.includes('sgt') || r.includes('sergeant') || r.includes('corp')) {
+                    containers.super.appendChild(tr);
+                } else {
+                    containers.patrol.appendChild(tr);
+                }
+            }
+        });
+
+        document.getElementById('counter').innerText = total + " ACTIVE";
+    } catch (e) {
+        console.error(e);
+        document.getElementById('roster-content').innerHTML = "<p style='text-align:center; padding:50px;'>Error loading data. Check spreadsheet publication.</p>";
+    }
+}
+
+loadData();
+</script>
+</body>
+</html>
